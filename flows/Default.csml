@@ -1,0 +1,4 @@
+start:
+  say "Je ne comprends pas ce que vous me demandez 😢 !"
+  say Image("https://media.giphy.com/media/ME3lgwOeIsQQrMAjp3/giphy.gif")
+  goto end

@@ -1,0 +1,66 @@
+start:
+  say "OK, je cherche cela pour vous 🤗"
+  say Typing(1500)
+
+  // If the flow was triggered with an intent, we can extract the slots
+  // and format them as specified by the Open Data API specification
+  do params = []
+  do slots = event._nlp_result.slots
+  if (slots.businessType) do params.push(slots.businessType)
+  if (slots.streetName) do params.push(slots.streetName)
+  do query = params.join("+")
+
+  // Let's query the Paris Open Data API to find a matching shop:
+  do res = HTTP("https://opendata.paris.fr/api/records/1.0/search/")
+    .query({
+      "dataset": "coronavirus-commercants-parisiens-livraison-a-domicile",
+      "facet": "code_postal",
+      "facet": "type_de_commerce",
+      "facet": "services",
+      "limit": "10",
+      "q": query
+    })
+    .get().send()
+
+  // If for some reason there is no result, we should let the user know
+  if (!res || !res.nhits) {
+    say "Je n'ai rien trouvé dans Paris pour cette requête ! Essayez peut-être autre chose ?"
+    say Image("https://media.giphy.com/media/x3V1SPDFVgaM8/giphy.gif")
+    goto end
+  }
+
+  say Typing(1500)
+  say "J'ai trouvé {{res.nhits}} résultats !"
+
+  // It would be inconvenient to show hundreds of results,
+  // let's display them in a Carousel, limited to max 10
+  if (res.nhits > 10) say "Voici les 10 premiers..."
+
+  do cards = []
+  remember items = []
+  foreach (item, index) in res.records {
+    // limit the results to 10 records
+    if (index > 9) break
+    do cards.push(Card(
+      item.fields.nom_du_commerce,
+      subtitle=item.fields.type_de_commerce,
+      buttons=[Button("Sélectionner", payload=item.recordid)]
+    ))
+    do items.push(item)
+  }
+
+  say Carousel(cards)
+  hold
+
+  foreach (item) in items {
+    if (event match item.recordid) {
+      say "Voici les informations pratiques de cet établissement:"
+      say "**Adresse:**\n{{item.fields.adresse}}, {{item.fields.code_postal}} Paris"
+      do coord = item.fields.geo_point_2d
+      say Url("https://www.google.fr/maps/search/{{coord[0]}},{{coord[1]}}", text="Plan d'accès")
+      if (item.fields.site_internet) say Url(item.fields.site_internet, text="Site internet")
+      break
+    }
+  }
+
+  goto end

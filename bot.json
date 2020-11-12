@@ -1,0 +1,26 @@
+{
+  "id": "523ec397-1064-414b-9485-f7244cb13097",
+  "name": "BaguetteBot",
+  "description": null,
+  "default_flow": "Default",
+  "flows": [
+    {
+      "name": "Default",
+      "description": null,
+      "commands": []
+    },
+    {
+      "name": "ShopFinder",
+      "commands": [
+        "BusinessNear"
+      ]
+    },
+    {
+      "name": "Welcome",
+      "commands": []
+    }
+  ],
+  "files": [],
+  "functions": [],
+  "apps": []
+}

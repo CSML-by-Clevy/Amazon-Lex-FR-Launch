@@ -1,0 +1,5 @@
+start:
+  say "Bienvenue sur BaguetteBot!"
+  say Typing(1500)
+  say "Je vous aide à trouver des commerces autour de vous à Paris. Que cherchez-vous ?"
+  goto end
